@@ -63,8 +63,11 @@ export default function Table() {
 
   const editEntry = () => {
     if (editId) {
-      searchData[editId].name = name;
-      searchData[editId].email = email;
+      console.log(editId)
+      searchData[editId - 1].name = name;
+      searchData[editId - 1].email = email;
+      setName('');
+      setEmail('');
     }
     setEditOpen(!editOpen);
   }
