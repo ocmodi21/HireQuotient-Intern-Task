@@ -4,11 +4,8 @@ import ReactPaginate from "react-paginate";
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
-import Button from '@mui/material/Button';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
+import EditModal from "./EditModal";
+import DeleteModal from "./DeleteModal";
 
 type userDataType = {
   id: number,
@@ -22,7 +19,11 @@ export default function Table() {
   const [searchData, setSearchData] = useState<userDataType[]>([]);
   const [allSelect, setAllSelect] = useState(false);
   const [open, setOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
   const [removeId, setRemoveId] = useState<number[]>([]);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [editId, setEditId] = useState<number>();
 
   useEffect(() => {
     fetch(import.meta.env.VITE_API_KEY)
@@ -60,6 +61,14 @@ export default function Table() {
     setSearchData(filteredUsers);
   }
 
+  const editEntry = () => {
+    if (editId) {
+      searchData[editId].name = name;
+      searchData[editId].email = email;
+    }
+    setEditOpen(!editOpen);
+  }
+
   const removeEntry = () => {
     let size = removeId.length;
     let filteredUsersData: userDataType[] = [];
@@ -83,8 +92,11 @@ export default function Table() {
           allSelect={allSelect}
           open={open}
           setOpen={setOpen}
+          editOpen={editOpen}
+          setEditOpen={setEditOpen}
           removeId={removeId}
           setRemoveId={setRemoveId}
+          setEditId={setEditId}
         />
       );
     });
@@ -202,33 +214,21 @@ export default function Table() {
           />
         </div>
 
-        <Dialog open={open}>
-          <DialogContent>
-            <DialogContentText
-              sx={{
-                fontFamily: "Nunito Sans",
-                fontSize: '18px',
-                fontWeight: '700',
-              }}
-            >
-              Are you sure you want to delete this entry?
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button
-              sx={{ fontFamily: 'Nunito Sans', fontSize: '14px', fontWeight: 600 }}
-              onClick={() => setOpen(!open)}
-            >
-              Cancel
-            </Button>
-            <Button
-              sx={{ fontFamily: 'Nunito Sans', fontSize: '14px', fontWeight: 600 }}
-              onClick={() => removeEntry()}
-            >
-              Confirm
-            </Button>
-          </DialogActions>
-        </Dialog>
+        <EditModal
+          editOpen={editOpen}
+          setEditOpen={setEditOpen}
+          name={name}
+          setName={setName}
+          email={email}
+          setEmail={setEmail}
+          editEntry={editEntry}
+        />
+
+        <DeleteModal
+          open={open}
+          setOpen={setOpen}
+          removeEntry={removeEntry}
+        />
       </div>
     </div>
   );

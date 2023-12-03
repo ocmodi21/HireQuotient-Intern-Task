@@ -10,11 +10,14 @@ type rowProp = {
   allSelect: boolean,
   open: boolean,
   setOpen: React.Dispatch<React.SetStateAction<boolean>>,
+  editOpen: boolean,
+  setEditOpen: React.Dispatch<React.SetStateAction<boolean>>,
+  setEditId: React.Dispatch<React.SetStateAction<number | undefined>>,
   removeId: number[],
   setRemoveId: React.Dispatch<React.SetStateAction<number[]>>
 }
 
-const TableRow = ({ id, name, email, role, allSelect, open, setOpen, removeId, setRemoveId }: rowProp) => {
+const TableRow = ({ id, name, email, role, allSelect, open, setOpen, editOpen, setEditOpen, removeId, setRemoveId, setEditId }: rowProp) => {
   const [select, setSelect] = useState(false);
   return (
     <tr className={allSelect || select ? 'bg-[#2b2eff] text-white bg-opacity-10' : 'hover:bg-[#F5F7F8] cursor-pointer'}>
@@ -38,7 +41,7 @@ const TableRow = ({ id, name, email, role, allSelect, open, setOpen, removeId, s
         {role}
       </td>
       <td className="px-6 py-4 text-md font-nunito font-semibold text-gray-800 whitespace-nowrap">
-        <span onClick={() => setOpen(!open)} className="text-green-500 hover:text-green-700">
+        <span onClick={() => { setEditOpen(!editOpen); setEditId(id) }} className="text-green-500 hover:text-green-700">
           Edit
         </span>
       </td>
