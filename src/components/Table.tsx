@@ -6,17 +6,11 @@ import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
 import EditModal from "./EditModal";
 import DeleteModal from "./DeleteModal";
-
-type userDataType = {
-  id: number,
-  name: string,
-  email: string,
-  role: string
-}
+import { userDataType } from "../types/UserDataType";
+import useDebounce from "./UseDebounce";
 
 export default function Table() {
   const [userData, setUserData] = useState<userDataType[]>([]);
-  const [searchData, setSearchData] = useState<userDataType[]>([]);
   const [allSelect, setAllSelect] = useState(false);
   const [open, setOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
@@ -25,6 +19,8 @@ export default function Table() {
   const [email, setEmail] = useState("");
   const [editId, setEditId] = useState<number>();
 
+
+  //Fetch Data
   useEffect(() => {
     fetch(import.meta.env.VITE_API_KEY)
       .then(response => {
@@ -36,6 +32,33 @@ export default function Table() {
       })
   }, []);
 
+
+  //Search
+  const [searchData, setSearchData] = useState<userDataType[]>([]);
+  const [searchText, setSearchText] = useState("");
+
+  useDebounce(() => {
+    setSearchData(filterData)
+  }, [userData, searchText], 500);
+
+  const filterData = () => {
+    const text = searchText.toLowerCase();
+    const filteredUsers: userDataType[] = [];
+
+    for (const user of userData) {
+      if (
+        user.name.toLowerCase().includes(text) ||
+        user.email.toLowerCase().includes(text) ||
+        user.role.toLowerCase().includes(text)
+      ) {
+        filteredUsers.push(user);
+      }
+    }
+    return filteredUsers;
+  }
+
+
+  //Pagination
   const [pageNumber, setPageNumber] = useState(0);
   const usersPerPage = 10;
   const pagesVisited = pageNumber * usersPerPage;
@@ -44,43 +67,6 @@ export default function Table() {
   const changePage = ({ selected }: any) => {
     setPageNumber(selected);
   };
-
-  const handleSearch = (text: string) => {
-    const searchText = text.toLowerCase();
-    const filteredUsers: userDataType[] = [];
-
-    for (const user of userData) {
-      if (
-        user.name.toLowerCase().includes(searchText) ||
-        user.email.toLowerCase().includes(searchText) ||
-        user.role.toLowerCase().includes(searchText)
-      ) {
-        filteredUsers.push(user);
-      }
-    }
-    setSearchData(filteredUsers);
-  }
-
-  const editEntry = () => {
-    if (editId) {
-      console.log(editId)
-      searchData[editId - 1].name = name;
-      searchData[editId - 1].email = email;
-      setName('');
-      setEmail('');
-    }
-    setEditOpen(!editOpen);
-  }
-
-  const removeEntry = () => {
-    let size = removeId.length;
-    let filteredUsersData: userDataType[] = [];
-    for (let i = 1; i <= size; i++) {
-      filteredUsersData = searchData.filter((user) => user.id !== removeId[i])
-    }
-    setSearchData(filteredUsersData)
-    setOpen(!open);
-  }
 
   const displayUsers = searchData
     .slice(pagesVisited, pagesVisited + usersPerPage)
@@ -104,6 +90,31 @@ export default function Table() {
       );
     });
 
+
+  //Edit Entry
+  const editEntry = () => {
+    if (editId && name !== '' && email !== '') {
+      console.log(editId)
+      searchData[editId - 1].name = name;
+      searchData[editId - 1].email = email;
+      setName('');
+      setEmail('');
+    }
+    setEditOpen(!editOpen);
+  }
+
+
+  //Delete Entry
+  const removeEntry = () => {
+    let size = removeId.length;
+    let filteredUsersData: userDataType[] = [];
+    for (let i = 1; i <= size; i++) {
+      filteredUsersData = searchData.filter((user) => user.id !== removeId[i])
+    }
+    setSearchData(filteredUsersData)
+    setOpen(!open);
+  }
+
   return (
     <div className="flex flex-col absolute w-[95%] top-20 px-10 py-5 bg-white rounded-[10px] shadow-xl">
       <div className="overflow-x-auto">
@@ -125,7 +136,7 @@ export default function Table() {
             <div className="relative">
               <input
                 type="text"
-                onChange={(e) => handleSearch(e.target.value)}
+                onChange={(e) => setSearchText(e.target.value)}
                 className="block w-full font-nunito p-3 pl-10 text-md font-semibold !outline-none rounded-[5px] border-[1px] border-gray-300"
                 placeholder="Search..."
               />
